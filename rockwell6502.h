@@ -12,6 +12,9 @@ public:
 	void decode();
 	void execute();
 
+	uint8_t read(uint16_t address);
+	void write(uint16_t address, uint8_t data);
+
 public:
 	struct instruction {
 		std::string nombre;
@@ -85,14 +88,17 @@ public:
 	void clock();
 	
 public: 
-	// Modos de direccionamiento
-	void ABS(void); void ABX(void); void ABY(void);
-	void ZP0(void); void ZPX(void); void ZPY(void);
-	void IND(void); void IDX(void); void IDY(void);
-	void REL(void);
+	// Modos de direccionamiento - Retorna los ciclos necesarios para obtener la direccion.
+	// Una instrucion toma tantos ciclos como ciclos donde hay accesos a la memoria + ciclos de calculo de direccion hechos por la naturaleza de los 8-bits
+	
+	uint8_t REL(); uint8_t IMM(); uint8_t IMP();
+	uint8_t ABS(); uint8_t ABX(); uint8_t ABY();
+	uint8_t ZP0(); uint8_t ZPX(); uint8_t ZPY();
+	uint8_t IND(); uint8_t IDX(); uint8_t IDY();
+	
 
 	uint16_t address_absolute = 0x0000;
-	uint16_t address_relative = 0x0000;
+	uint8_t address_relative = 0x00;
 	uint16_t cycles = 0x0000;
 	uint16_t clock_counter = 0x0000;
 

@@ -21,6 +21,15 @@ void rockwell6502::execute()
 {
 }
 
+uint8_t rockwell6502::read(uint16_t address)
+{
+	return 0;
+}
+
+void rockwell6502::write(uint16_t address, uint8_t data)
+{
+}
+
 void rockwell6502::reset() {
 	A = 0x00;
 	X = 0x00;
@@ -59,45 +68,112 @@ void rockwell6502::clock() {
 
 }
 
-void rockwell6502::ABY(void)
-{
+
+// Direccionamiento
+
+
+uint8_t rockwell6502::IMM() {
+	address_absolute = ++PC;
+	return 0x00;
 }
 
-void rockwell6502::ZPY(void)
+uint8_t rockwell6502::ZP0()
 {
+	address_absolute = 0x00FF & read(++PC);
+	return 0x00;
+}
+uint8_t rockwell6502::ZPX()
+{
+	address_absolute = 0x00FF & (read(++PC) + X);
+	return 0x00;
+}
+uint8_t rockwell6502::ZPY()
+{
+	address_absolute = 0x00FF & (read(++PC) + Y);
+	return 0x00;
 }
 
-void rockwell6502::IDX(void)
+uint8_t rockwell6502::ABS()
 {
+	uint16_t addr_low  = read(++PC);
+	uint16_t addr_high = read(++PC);
+	address_absolute = (addr_high << 8) + addr_low;
+	return 0x00;
 }
 
-void rockwell6502::ABX(void)
+uint8_t rockwell6502::ABX()
 {
+	uint16_t addr_low  = read(++PC);
+	uint16_t addr_high = read(++PC);
+	addr_low += X;
+	address_absolute = (addr_high << 8) + addr_low; 
+	if (addr_low > 0x00FF) {
+		return 0x01;
+	}
+	return 0x00;
 }
 
-void rockwell6502::ZPX(void)
+uint8_t rockwell6502::ABY()
 {
+	uint16_t addr_low  = read(++PC);
+	uint16_t addr_high = read(++PC);
+	addr_low += Y;
+	address_absolute = (addr_high << 8) + addr_low;
+	if (addr_low > 0x00FF) {
+		return 0x01;
+	}
+	return 0x00;
 }
 
-void rockwell6502::IDY(void)
+uint8_t rockwell6502::IND()
 {
+	uint16_t addr_low  = read(++PC);
+	uint16_t addr_high = read(++PC);
+	uint16_t address = (addr_high << 8) + addr_low;
+	addr_low  = read(address + 0);
+	addr_high = read(address + 1);
+	address_absolute = (addr_high << 8) + addr_low;
+	return 0x00;
 }
 
-void rockwell6502::ABS(void)
+uint8_t rockwell6502::IDX()
 {
+	uint16_t address = 0x00FF & (read(++PC) + X);
+	uint16_t addr_low  = read(address + 0);
+	uint16_t addr_high = read(address + 1);
+	address_absolute = (addr_high << 8) + addr_low;
+	return 0x00;
+}
+uint8_t rockwell6502::IDY()
+{
+	uint16_t address = 0x00FF & read(++PC);
+	uint16_t addr_low = read(address + 0);
+	uint16_t addr_high = read(address + 1);
+	addr_low += Y;
+	address_absolute = (addr_high << 8) + addr_low;
+	if (addr_low > 0x00FF) {
+		return 0x01;
+	}
+	return 0x00;
 }
 
-void rockwell6502::ZP0(void)
+uint8_t rockwell6502::REL()
 {
+	uint8_t unoperand = read(++PC);
+	int8_t operand;
+	memcpy(&operand, &unoperand, sizeof operand);
+	address_relative = operand;
+	return 0x00;
 }
 
-void rockwell6502::IND(void)
+uint8_t rockwell6502::IMP()
 {
+	return 0x00;
 }
 
-void rockwell6502::REL(void)
-{
-}
+
+// Instrucciones
+
 
 void rockwell6502::INC()
 {
