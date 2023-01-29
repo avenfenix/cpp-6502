@@ -124,6 +124,10 @@ public:
 	uint8_t GetFlag(flags entry);
 	void SetFlag(flags entry, bool value);
 	
+public: // utilidades
+
+	void isNegative(uint8_t byte);
+	void isZero(uint8_t byte);
 
 };
 

@@ -56,6 +56,26 @@ void rockwell6502::SetFlag(flags entry, bool value)
 	}
 }
 
+void rockwell6502::isNegative(uint8_t byte)
+{
+	if (((byte & 0b1000000) >> 7) == 0x01) {
+		SetFlag(N, true);
+	}
+	else {
+		SetFlag(N, false);
+	}
+}
+
+void rockwell6502::isZero(uint8_t byte)
+{
+	if (byte == 0x00) {
+		SetFlag(Z, true);
+	}
+	else {
+		SetFlag(Z, false);
+	}
+}
+
 void rockwell6502::irq() {
 
 }
@@ -225,26 +245,78 @@ void rockwell6502::JMP()
 // Load accumulator with memory
 void rockwell6502::LDA()
 {
+	A = read(address_absolute);
+	isNegative(A);
+	isZero(A);
 }
 
 void rockwell6502::LDX()
 {
+	X = read(address_absolute);
+	isNegative(X);
+	isZero(X);
 }
 
 void rockwell6502::LDY()
 {
+	Y = read(address_absolute);
+	isNegative(Y);
+	isZero(Y);
 }
 
 void rockwell6502::STA()
 {
+	write(address_absolute, A);
 }
 
 void rockwell6502::STX()
 {
+	write(address_absolute, X);
 }
 
 void rockwell6502::STY()
 {
+	write(address_absolute, Y);
+}
+
+void rockwell6502::TAX(void)
+{
+	X = A;
+	isNegative(X);
+	isZero(X);
+}
+
+void rockwell6502::TAY(void)
+{
+	Y = A;
+	isNegative(Y);
+	isZero(Y);
+}
+
+void rockwell6502::TXA(void)
+{
+	A = X;
+	isNegative(A);
+	isZero(A);
+}
+
+void rockwell6502::TYA(void)
+{
+	A = Y;
+	isNegative(A);
+	isZero(A);
+}
+
+void rockwell6502::TXS(void)
+{
+	SP = X;
+}
+
+void rockwell6502::TSX(void)
+{
+	X = SP;
+	isNegative(X);
+	isZero(X);
 }
 
 void rockwell6502::ADC()
@@ -263,29 +335,7 @@ void rockwell6502::ORA()
 {
 }
 
-void rockwell6502::TAX(void)
-{
-}
 
-void rockwell6502::TAY(void)
-{
-}
-
-void rockwell6502::TXA(void)
-{
-}
-
-void rockwell6502::TYA(void)
-{
-}
-
-void rockwell6502::TXS(void)
-{
-}
-
-void rockwell6502::TSX(void)
-{
-}
 
 void rockwell6502::DEY(void)
 {
