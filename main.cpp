@@ -1,4 +1,4 @@
-#include "rockwell6502.h"
+#include "aven6502.h"
 
 int main(int argc, char* argv[]) {
 	
@@ -15,6 +15,13 @@ int main(int argc, char* argv[]) {
 
 	// 30-01-2023
 	// Operaciones de shifteo de bits // isCarry
+
+	// 31-01-2023
+	// Operaciones: sobre memoria, bit a bit, sobre registros, comparacion de bytes, Branch.
+	// Temas: Cuando actualizar el Program Counter
+
+	
+	
 
 	return 0;
 }

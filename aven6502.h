@@ -2,11 +2,11 @@
 #include <inttypes.h>
 #include <string>
 
-class rockwell6502
+class aven6502
 {
 public:
-	rockwell6502();
-	~rockwell6502();
+	aven6502();
+	~aven6502();
 	
 	void fetch();
 	void decode();
@@ -15,11 +15,20 @@ public:
 	uint8_t read(uint16_t address);
 	void write(uint16_t address, uint8_t data);
 
+
+public: 
+	// Eventos
+	void reset();
+	void irq();
+	void nmi();
+	void clock();
+
+
 public:
 	struct instruction {
 		std::string nombre;
-		uint8_t (rockwell6502::*execute)(void) = nullptr; // Puntero a ejecutor de operacion
-		uint8_t (rockwell6502::*address)(void) = nullptr; // Puntero al modo de addressing
+		uint8_t (aven6502::*execute)(void) = nullptr; // Puntero a ejecutor de operacion
+		uint8_t (aven6502::*address)(void) = nullptr; // Puntero al modo de addressing
 		uint8_t cycles = 0;
 	} lookup;
 
@@ -78,12 +87,6 @@ public:
 	// Otras
 	void NOP(); 
 
-public:
-	// Eventos
-	void reset();
-	void irq();
-	void nmi();
-	void clock();
 	
 public: 
 	// Modos de direccionamiento - Retorna los ciclos necesarios para obtener la direccion.
@@ -94,11 +97,14 @@ public:
 	uint8_t ZP0(); uint8_t ZPX(); uint8_t ZPY();
 	uint8_t IND(); uint8_t IDX(); uint8_t IDY();
 	
+	//	Note: En mi emulacion, el Program Counter cambiara cuando un addressing mode es llamado. 
+	// O en la instruccion en caso de un branch o una de modo Implied. 
 
 	uint16_t address_absolute = 0x0000;
 	uint8_t address_relative = 0x00;
 	uint16_t cycles = 0x0000;
 	uint16_t clock_counter = 0x0000;
+
 
 public:
 	uint8_t A = 0x00;		// ACUMULADOR
@@ -115,13 +121,14 @@ public:
 		D = 0x01 << 3,	// Decimal
 		B = 0x01 << 4,	// B flag
 		U = 0x01 << 5,	// No usado
-		O = 0x01 << 6,	// Overflow
+		V = 0x01 << 6,	// Overflow
 		N = 0x01 << 7,	// Negative
 	};
 
 	uint8_t GetFlag(flags entry);
 	void SetFlag(flags entry, bool value);
-	
+
+
 public: // utilidades
 	enum Utils {
 		LEFT,
@@ -131,8 +138,7 @@ public: // utilidades
 	void isNegative(uint8_t byte);
 	void isZero(uint8_t byte);
 	void isCarry(uint8_t byte, Utils direction);
-
-	
+	void isOverflow(uint8_t byte);
 
 };
 
