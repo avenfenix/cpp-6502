@@ -9,9 +9,12 @@ int main(int argc, char* argv[]) {
 	// 28-01-2023
 	// Modos de direccionamiento y sus ciclos.
 
-	// 29-01-2023/
-	// Operaciones de transferencia de datos. // esNegativo, esCero
+	// 29-01-2023
+	// Operaciones de transferencia de datos. // isNegative, isZero
 	// Note: Proximo operaciones de shifteo de bits.
+
+	// 30-01-2023
+	// Operaciones de shifteo de bits // isCarry
 
 	return 0;
 }

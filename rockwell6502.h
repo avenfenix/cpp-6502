@@ -56,8 +56,6 @@ public:
 	// Operaciones para shiftear bits
 	void LSR(); void ASL(); 
 	void ROR(); void ROL();
-	void LSRA(void); void ASLA(void);
-	void ROLA(void); void RORA(void);
 	
 	// Salto - JUMP
 	void JMP();
@@ -125,9 +123,16 @@ public:
 	void SetFlag(flags entry, bool value);
 	
 public: // utilidades
+	enum Utils {
+		LEFT,
+		RIGTH
+	};
 
 	void isNegative(uint8_t byte);
 	void isZero(uint8_t byte);
+	void isCarry(uint8_t byte, Utils direction);
+
+	
 
 };
 

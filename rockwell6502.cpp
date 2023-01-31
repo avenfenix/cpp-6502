@@ -58,22 +58,23 @@ void rockwell6502::SetFlag(flags entry, bool value)
 
 void rockwell6502::isNegative(uint8_t byte)
 {
-	if (((byte & 0b1000000) >> 7) == 0x01) {
-		SetFlag(N, true);
-	}
-	else {
-		SetFlag(N, false);
-	}
+	SetFlag(N, (((byte & 0b1000000) >> 7) == 0x01) ? true : false);
 }
 
 void rockwell6502::isZero(uint8_t byte)
 {
-	if (byte == 0x00) {
-		SetFlag(Z, true);
+	SetFlag(Z, byte == 0x00 ? true : false);
+}
+
+void rockwell6502::isCarry(uint8_t byte, Utils direction) {
+
+	if (direction == RIGTH) {
+		SetFlag(C, (byte & 0b00000001) == 0x01 ? true : false);
+	} 
+	else if (direction == LEFT) {
+		SetFlag(C, (byte & 0b10000000) == 0x01 ? true : false);
 	}
-	else {
-		SetFlag(Z, false);
-	}
+	
 }
 
 void rockwell6502::irq() {
@@ -225,18 +226,46 @@ void rockwell6502::BIT()
 
 void rockwell6502::LSR()
 {
+	uint8_t byte = read(address_absolute);
+	isCarry(byte, RIGTH);
+	byte >> 1;
+	write(address_absolute, byte);
+	isZero(byte);
+	SetFlag(N, false);
 }
 
 void rockwell6502::ASL()
 {
+	uint8_t byte = read(address_absolute);
+	isCarry(byte, LEFT);
+	byte << 1;
+	write(address_absolute, byte);
+	isZero(byte);
+	isNegative(byte);
 }
 
 void rockwell6502::ROL()
 {
+	uint8_t carry = GetFlag(C);
+	uint8_t byte = read(address_absolute);
+	isCarry(byte, LEFT);
+	byte = byte << 1;
+	byte = byte | carry;
+	write(address_absolute, byte);
+	isNegative(byte);
+	isZero(byte);
 }
 
 void rockwell6502::ROR()
 {
+	uint8_t carry = GetFlag(C);
+	uint8_t byte = read(address_absolute);
+	isCarry(byte, RIGTH);
+	byte = byte >> 1;
+	byte = byte | (carry << 7);
+	write(address_absolute, byte);
+	isNegative(byte);
+	isZero(byte);
 }
 
 void rockwell6502::JMP()
@@ -350,22 +379,6 @@ void rockwell6502::INX(void)
 }
 
 void rockwell6502::INY(void)
-{
-}
-
-void rockwell6502::LSRA(void)
-{
-}
-
-void rockwell6502::ASLA(void)
-{
-}
-
-void rockwell6502::ROLA(void)
-{
-}
-
-void rockwell6502::RORA(void)
 {
 }
 
