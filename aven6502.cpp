@@ -78,7 +78,7 @@ void aven6502::isCarry(uint8_t byte, Utils direction) {
 }
 
 void aven6502::isOverflow(uint8_t byte) {
-	
+	SetFlag(V, (byte >= 80) ? true : false);
 }
 
 void aven6502::irq() {
@@ -96,34 +96,34 @@ void aven6502::clock() {
 
 // Direccionamiento
 
-uint8_t aven6502::IMM() {
+uint8_t aven6502::IMM(void) {
 	address_absolute = ++PC;
 	PC++;
 	return 0x00;
 }
 
-uint8_t aven6502::ZP0()
+uint8_t aven6502::ZP0(void)
 {
 	address_absolute = 0x00FF & read(++PC);
 	PC++;
 	return 0x00;
 }
 
-uint8_t aven6502::ZPX()
+uint8_t aven6502::ZPX(void)
 {
 	address_absolute = 0x00FF & (read(++PC) + X);
 	PC++;
 	return 0x00;
 }
 
-uint8_t aven6502::ZPY()
+uint8_t aven6502::ZPY(void)
 {
 	address_absolute = 0x00FF & (read(++PC) + Y);
 	PC++;
 	return 0x00;
 }
 
-uint8_t aven6502::ABS()
+uint8_t aven6502::ABS(void)
 {
 	uint16_t addr_low  = read(++PC);
 	uint16_t addr_high = read(++PC);
@@ -132,7 +132,7 @@ uint8_t aven6502::ABS()
 	return 0x00;
 }
 
-uint8_t aven6502::ABX()
+uint8_t aven6502::ABX(void)
 {
 	uint16_t addr_low  = read(++PC);
 	uint16_t addr_high = read(++PC);
@@ -145,7 +145,7 @@ uint8_t aven6502::ABX()
 	return 0x00;
 }
 
-uint8_t aven6502::ABY()
+uint8_t aven6502::ABY(void)
 {
 	uint16_t addr_low  = read(++PC);
 	uint16_t addr_high = read(++PC);
@@ -158,7 +158,7 @@ uint8_t aven6502::ABY()
 	return 0x00;
 }
 
-uint8_t aven6502::IND()
+uint8_t aven6502::IND(void)
 {
 	uint16_t addr_low  = read(++PC);
 	uint16_t addr_high = read(++PC);
@@ -170,7 +170,7 @@ uint8_t aven6502::IND()
 	return 0x00;
 }
 
-uint8_t aven6502::IDX()
+uint8_t aven6502::IDX(void)
 {
 	uint16_t address = 0x00FF & (read(++PC) + X);
 	uint16_t addr_low  = read(address + 0);
@@ -180,7 +180,7 @@ uint8_t aven6502::IDX()
 	return 0x00;
 }
 
-uint8_t aven6502::IDY()
+uint8_t aven6502::IDY(void)
 {
 	uint16_t address = 0x00FF & read(++PC);
 	uint16_t addr_low = read(address + 0);
@@ -194,16 +194,28 @@ uint8_t aven6502::IDY()
 	return 0x00;
 }
 
-uint8_t aven6502::REL()
+uint8_t aven6502::REL(void)
 {
 	uint8_t unoperand = read(++PC);
 	int8_t operand;
 	memcpy(&operand, &unoperand, sizeof operand);
 	address_relative = operand;
-	return 0x00;
+
+	uint8_t PCH = (uint8_t) ((PC & 0xFF00) >> 8);
+	PC += address_relative;
+	bool cruzo = ((uint8_t)((PC & 0xFF00) >> 8)) != PCH ? true : false;
+
+	if (cruzo) {
+		return 0x02; // Add 2 ciclos si cruza la pagina.
+	}
+	else {
+		return 0x01; // Add 1 ciclo si se mantiene en la pagina.
+	}
+
+	
 }
 
-uint8_t aven6502::IMP()
+uint8_t aven6502::IMP(void)
 {
 	return 0x00;
 }
@@ -211,7 +223,7 @@ uint8_t aven6502::IMP()
 
 // Operaciones sobre la memoria
 
-void aven6502::INC()
+void aven6502::INC(void)
 {
 	if (read(address_absolute) == 0xFF) {
 		write(address_absolute, 0x00);
@@ -223,7 +235,7 @@ void aven6502::INC()
 	}
 }
 
-void aven6502::DEC()
+void aven6502::DEC(void)
 {
 	if (read(address_absolute) == 0x00) {
 		write(address_absolute, 0xFF);
@@ -239,7 +251,7 @@ void aven6502::DEC()
 	}
 }
 
-void aven6502::CMP()
+void aven6502::CMP(void)
 {
 	uint8_t resta = A - read(address_absolute);
 	isZero(resta);
@@ -252,7 +264,7 @@ void aven6502::CMP()
 	}
 }
 
-void aven6502::CPX()
+void aven6502::CPX(void)
 {
 	uint8_t resta = X - read(address_absolute);
 	isZero(resta);
@@ -265,7 +277,7 @@ void aven6502::CPX()
 	}
 }
 
-void aven6502::CPY()
+void aven6502::CPY(void)
 {
 	uint8_t resta = Y - read(address_absolute);
 	isZero(resta);
@@ -278,7 +290,7 @@ void aven6502::CPY()
 	}
 }
 
-void aven6502::BIT()
+void aven6502::BIT(void)
 {
 	uint8_t byte = read(address_absolute);
 	SetFlag(N, (((0b10000000 & byte) >> 7) == 0x01) ? true : false);
@@ -287,7 +299,7 @@ void aven6502::BIT()
 	isZero(byte);
 }
 
-void aven6502::LSR()
+void aven6502::LSR(void)
 {
 	uint8_t byte = read(address_absolute);
 	isCarry(byte, RIGTH);
@@ -297,7 +309,7 @@ void aven6502::LSR()
 	SetFlag(N, false);
 }
 
-void aven6502::ASL()
+void aven6502::ASL(void)
 {
 	uint8_t byte = read(address_absolute);
 	isCarry(byte, LEFT);
@@ -307,7 +319,7 @@ void aven6502::ASL()
 	isNegative(byte);
 }
 
-void aven6502::ROL()
+void aven6502::ROL(void)
 {
 	uint8_t carry = GetFlag(C);
 	uint8_t byte = read(address_absolute);
@@ -319,7 +331,7 @@ void aven6502::ROL()
 	isZero(byte);
 }
 
-void aven6502::ROR()
+void aven6502::ROR(void)
 {
 	uint8_t carry = GetFlag(C);
 	uint8_t byte = read(address_absolute);
@@ -334,38 +346,38 @@ void aven6502::ROR()
 
 // Transferencia de bytes
 
-void aven6502::LDA()
+void aven6502::LDA(void)
 {
 	A = read(address_absolute);
 	isNegative(A);
 	isZero(A);
 }
 
-void aven6502::LDX()
+void aven6502::LDX(void)
 {
 	X = read(address_absolute);
 	isNegative(X);
 	isZero(X);
 }
 
-void aven6502::LDY()
+void aven6502::LDY(void)
 {
 	Y = read(address_absolute);
 	isNegative(Y);
 	isZero(Y);
 }
 
-void aven6502::STA()
+void aven6502::STA(void)
 {
 	write(address_absolute, A);
 }
 
-void aven6502::STX()
+void aven6502::STX(void)
 {
 	write(address_absolute, X);
 }
 
-void aven6502::STY()
+void aven6502::STY(void)
 {
 	write(address_absolute, Y);
 }
@@ -415,10 +427,69 @@ void aven6502::TSX(void)
 
 void aven6502::ADC()
 {
+
+	uint8_t carry = GetFlag(C);
+	uint8_t bit7 = 0x00;
+	int8_t op1 = (int8_t) A;
+	int8_t op2 = (int8_t) read(address_absolute);
+
+	int8_t cmp1 = op1;
+	int8_t cmp2 = op2;
+	uint8_t bit7_op1 = ((op1 & 0b10000000) >> 7);
+	uint8_t bit7_op2 = ((op2 & 0b10000000) >> 7);
+
+	if (bit7_op1 == 0x01) cmp1 = ~cmp1 + 1;
+	if (bit7_op2 == 0x01) cmp2 = ~cmp2 + 1;
+
+	if (cmp1 >= cmp2) {
+		bit7 = bit7_op1;
+	}
+	else {
+		bit7 = bit7_op2;
+	}
+
+	uint16_t sum = A + read(address_absolute) + carry;
+	
+	SetFlag(V, (sum & 0b10000000 >> 7) == bit7 ? false : true);
+	
+	if (sum > 0x00FF) {
+		SetFlag(C, true);
+		A = ((uint8_t)sum) & 0xFF;
+	}
+	else {
+		SetFlag(C, false);
+		A = ((uint8_t)sum);
+	}
+	isZero(A);
+	isNegative(A);
+	PC++;
 }
 
 void aven6502::SBC()
 {
+	uint8_t carry = GetFlag(C);
+	uint8_t bit7 = 0x00;
+	int8_t op1 = (int8_t)A;
+	int8_t op2 = (int8_t)read(address_absolute);
+
+	if (op1 >= op2) {
+		SetFlag(C, true);
+	}
+	else {
+		SetFlag(C, false);
+	}
+
+	op2 = ~op2; // Two complement
+	op2 = op2 + carry; // True Two complement
+	int16_t sum = op1 + op2;
+	A = (uint8_t)sum;
+
+
+	SetFlag(V, sum > 127 && sum < -127 ? true : false);
+	isNegative(A);
+	isZero(A);
+	
+	PC++;
 }
 
 
@@ -504,7 +575,7 @@ void aven6502::INY(void)
 }
 
 
-// Branch y salto
+// Branch y salto ** add 1 to cycles if branch occurs on same page
 
 void aven6502::JMP()
 {
@@ -515,42 +586,42 @@ void aven6502::JMP()
 
 void aven6502::BPL(void)
 {
-	if (GetFlag(N) == false) PC = address_relative;
+	if (GetFlag(N) == false) PC += address_relative;
 }
 
 void aven6502::BMI(void)
 {
-	if (GetFlag(N) == true) PC = address_relative;
+	if (GetFlag(N) == true) PC += address_relative;
 }
 
 void aven6502::BVC(void)
 {
-	if (GetFlag(V) == false) PC = address_relative;
+	if (GetFlag(V) == false) PC += address_relative;
 }
 
 void aven6502::BVS(void)
 {
-	if (GetFlag(V) == true) PC = address_relative;
+	if (GetFlag(V) == true) PC += address_relative;
 }
 
 void aven6502::BCS(void)
 {
-	if (GetFlag(C) == true) PC = address_relative;
+	if (GetFlag(C) == true) PC += address_relative;
 }
 
 void aven6502::BCC(void)
 {
-	if (GetFlag(C) == false) PC = address_relative;
+	if (GetFlag(C) == false) PC += address_relative;
 }
 
 void aven6502::BEQ(void)
 {
-	if (GetFlag(Z) == true) PC = address_relative;
+	if (GetFlag(Z) == true) PC += address_relative;
 }
 
 void aven6502::BNE(void)
 {
-	if (GetFlag(Z) == false) PC = address_relative;
+	if (GetFlag(Z) == false) PC += address_relative;
 }
 
 
@@ -558,26 +629,49 @@ void aven6502::BNE(void)
 
 void aven6502::JSR(void)
 {
-}
-
-void aven6502::PHA(void)
-{
+	uint8_t LSB_PC = (uint8_t)PC & 0x00FF;
+	uint8_t MSB_PC = (uint8_t)(PC & 0xFF00 >> 8);
+	write(0x0100 + SP--, MSB_PC);
+	write(0x0100 + SP--, LSB_PC);
+	PC = address_absolute;
 }
 
 void aven6502::RTS(void)
 {
+	uint8_t LSB = read(0x0100 + ++SP);
+	write(SP, 0x00);
+	uint8_t MSB = read(0x0100 + ++SP);
+	write(SP, 0x00);
+	PC = ((uint16_t)MSB << 8) + ((uint16_t)LSB); 
+	PC++;
+}
+
+void aven6502::PHA(void)
+{
+	write(0x0100 + SP--, A);
+	PC++;
 }
 
 void aven6502::PHP(void)
 {
+	write(0x0100 + SP--, P);
+	PC++;
 }
 
 void aven6502::PLA(void)
 {
+	A = read(0x0100 + ++SP);
+	write(0x0100 + SP, 0x00);
+	isNegative(A);
+	isZero(A);
+	PC++;
 }
 
 void aven6502::PLP(void)
 {
+	P = read(0x0100 + ++SP);
+	write(SP, 0x00);
+	PC++;
 }
 
 
@@ -585,10 +679,27 @@ void aven6502::PLP(void)
 
 void aven6502::RTI()
 {
+	P = read(0x0100 + ++SP);
+	write(SP, 0x00);
+
+	uint8_t LSB = read(0x0100 + ++SP);
+	write(SP, 0x00);
+	uint8_t MSB = read(0x0100 + ++SP);
+	write(SP, 0x00);
+	PC = ((uint16_t)MSB << 8) + ((uint16_t)LSB);
 }
 
 void aven6502::BRK()
 {
+	SetFlag(I, true);
+	write(0x0100 + SP--, (PC + 2 & 0x00FF)); // push PCH
+	write(0x0100 + SP--, (PC + 2 & 0xFF00 >> 8)); // push PCL
+
+	SetFlag(B, false);
+	write(0x0100 + SP--, P);
+	SetFlag(B, false);
+
+	PC = (uint16_t)read(0xFFFE) | (uint16_t)(read(0xFFFF) << 8);
 }
 
 void aven6502::NOP()
