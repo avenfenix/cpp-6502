@@ -1,102 +1,120 @@
 #pragma once
 #include <inttypes.h>
 #include <string>
+#include <vector>
+#include <memory>
+
+using std::vector;
+
+class Bus;
 
 class aven6502
 {
 public:
 	aven6502();
 	~aven6502();
-	
-	void fetch();
+
+	uint8_t fetch();
 	void decode();
 	void execute();
 
 	uint8_t read(uint16_t address);
 	void write(uint16_t address, uint8_t data);
 
+	// La cpu tiene que leer y escribir en el bus, este bus esta configurado de la manera que nosotros queramos. Seria bueno
+	// tener una clase Bus que nos permita conectar distintos dispositivos a este bus como la cpu, ram, almacenamiento, etc. 
+	// de manera sencilla.
+	// * Para probar utilizare solo un arreglo de bytes que contenga todo el rango de direcciones posible.
 
-public: 
+public:
+	// Dispositivos
+	std::shared_ptr<Bus> bus;
+	void ConnectOnBus(Bus* bus);
+
+public:
 	// Eventos
 	void reset();
 	void irq();
 	void nmi();
 	void clock();
 
-
 public:
 	struct instruction {
 		std::string nombre;
-		uint8_t (aven6502::*execute)(void) = nullptr; // Puntero a ejecutor de operacion
-		uint8_t (aven6502::*address)(void) = nullptr; // Puntero al modo de addressing
+		uint8_t(aven6502::* execute)(void) = nullptr; // Puntero a ejecutor de operacion
+		uint8_t(aven6502::* address)(void) = nullptr; // Puntero al modo de addressing
 		uint8_t cycles = 0;
-	} lookup;
+	};
+	
+	vector<instruction> lista;
 
 	// Estado del procesador
-	void SEC(); void CLC(); void CLV();
-	void SEI(); void CLI(); void SED();
-	void CLD();
+	uint8_t SEC(); uint8_t CLC(); uint8_t CLV();
+	uint8_t SEI(); uint8_t CLI(); uint8_t SED();
+	uint8_t CLD();
 
 	// Transferencia de bytes
-	void LDA(); void LDX(); void LDY();
-	void STA(); void STX(); void STY();
-	void TAX(); void TAY(); void TXA();
-	void TXS(); void TYA(); void TSX();
+	uint8_t LDA(); uint8_t LDX(); uint8_t LDY();
+	uint8_t STA(); uint8_t STX(); uint8_t STY();
+	uint8_t TAX(); uint8_t TAY(); uint8_t TXA();
+	uint8_t TXS(); uint8_t TYA(); uint8_t TSX();
 
 	// Operacion matematica basica
-	void ADC(); void SBC(); 
-	
+	uint8_t ADC(); uint8_t SBC();
+
 	// Operaciones bit a bit
-	void AND(); void ORA(); void EOR();
+	uint8_t AND(); uint8_t ORA(); uint8_t EOR();
 
 	// Operaciones sobre registros
-	void INX(void); void INY(void);
-	void DEY(void);	void DEX(void);
+	uint8_t INX(void); uint8_t INY(void);
+	uint8_t DEY(void);	uint8_t DEX(void);
 
 	// Operaciones sobre la memoria
-	void INC();	void DEC();
+	uint8_t INC();	uint8_t DEC();
 
 	// Comparacion de bytes
-	void CMP(); void CPX();	void CPY();
-	
+	uint8_t CMP(); uint8_t CPX();	uint8_t CPY();
+
 	// Para testear bits
-	void BIT(); 
+	uint8_t BIT();
 
 	// Operaciones para shiftear bits
-	void LSR(); void ASL(); 
-	void ROR(); void ROL();
-	
+	uint8_t LSR(); uint8_t ASL();
+	uint8_t ROR(); uint8_t ROL();
+
 	// Salto - JUMP
-	void JMP();
+	uint8_t JMP();
 
 	// Branch
-	void BMI(void); void BVC(void);
-	void BPL(void); void BCS(void);
-	void BVS(void); void BCC(void);
-	void BEQ(void); void BNE(void);
-	
+	uint8_t BMI(void); uint8_t BVC(void);
+	uint8_t BPL(void); uint8_t BCS(void);
+	uint8_t BVS(void); uint8_t BCC(void);
+	uint8_t BEQ(void); uint8_t BNE(void);
+
 	// Operaciones para manejar subrutinas y pila de llamadas
-	void RTS(void); void JSR(void);
-	void PHA(void); void PHP(void);
-	void PLA(void); void PLP(void);
+	uint8_t RTS(void); uint8_t JSR(void);
+	uint8_t PHA(void); uint8_t PHP(void);
+	uint8_t PLA(void); uint8_t PLP(void);
 
 
 	// Operacion para manejar interrupciones
-	void RTI(); void BRK();  
+	uint8_t RTI(); uint8_t BRK();
 
 	// Otras
-	void NOP(); 
+	uint8_t NOP();
 
-	
-public: 
+	uint8_t XXX();
+
+
+public:
 	// Modos de direccionamiento - Retorna los ciclos necesarios para obtener la direccion.
 	// Una instrucion toma tantos ciclos como ciclos donde hay accesos a la memoria + ciclos de calculo de direccion hechos por la naturaleza de los 8-bits
-	
+
 	uint8_t REL(); uint8_t IMM(); uint8_t IMP();
 	uint8_t ABS(); uint8_t ABX(); uint8_t ABY();
 	uint8_t ZP0(); uint8_t ZPX(); uint8_t ZPY();
 	uint8_t IND(); uint8_t IDX(); uint8_t IDY();
-	
+
 	//	Note: En mi emulacion, el Program Counter cambiara cuando un addressing mode es llamado. 
 	// O en la instruccion en caso de un branch o una de modo Implied. 
 
@@ -141,4 +159,3 @@ public: // utilidades
 	void isOverflow(uint8_t byte);
 
 };
-
