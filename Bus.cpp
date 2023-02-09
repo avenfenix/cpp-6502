@@ -16,6 +16,7 @@ Bus::~Bus()
 void Bus::clock()
 {
 	CPU.clock();
+	clock_counter++;
 }
 
 void Bus::reset()

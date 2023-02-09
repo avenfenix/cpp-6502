@@ -807,6 +807,7 @@ uint8_t aven6502::BRK()
 
 uint8_t aven6502::NOP()
 {
+	PC++;
 	return 0x00;
 }
 

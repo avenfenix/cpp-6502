@@ -143,7 +143,7 @@ public:
 		N = 0x01 << 7,	// Negative
 	};
 
-	uint8_t GetFlag(flags entry);
+    uint8_t GetFlag(flags entry);
 	void SetFlag(flags entry, bool value);
 
 
