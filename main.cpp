@@ -70,17 +70,38 @@ class App : public Engine {
 		uint16_t address;
 		uint8_t byte;
 	};
-
+	//D:\\Emulation\\6502
 	std::vector<memformat> rom =
 	{
-		{0xFFFC, 0x00},
-		{0xFFFD, 0x80},
-		{0x8000, 0xA9},
-		{0x8001, 0xFF},
-		{0x8002, 0xA2},
-		{0x8003, 0x7F},
-		{0x8004, 0xA0},
-		{0x8005, 0x3F},
+		{0x1FFE, 0x00}, {0x1FFF, 0x80},
+		{0x2001, 0x23},
+		{0x2002, 0x24},
+		{0x2003, 0x25},
+		{0x0080, 0x26},
+		{0x0081, 0x27},
+		{0x0082, 0x00}, {0x0083, 0x30},
+		{0x0084, 0x00}, {0x0085, 0x30},
+		{0x3000, 0x28}, {0x3001, 0x20},
+		{0x3002, 0x29 },
+		{0xFFFC, 0x00}, {0xFFFD, 0x80},
+		
+		{0x8000, 0xA9}, {0x8001, 0xFF},					// LDA #$FF
+		{0x8002, 0x10}, {0x8003, 0x01},					// BPL $01
+		{0x8004, 0xEA},									// NOP
+		{0x8005, 0x78},									// SEI
+		{0x8006, 0xAD}, {0x8007, 0x01}, {0x8008, 0x20}, // LDA $2001
+		{0x8009, 0xA2}, {0x800A, 0x01},					// LDX #01
+		{0x800B, 0xBD}, {0x800C, 0x01}, {0x800D, 0x20}, // LDA $2001, X
+		{0x800E, 0xA0}, {0x800F, 0x02},					// LDY #02
+		{0x8010, 0xB9}, {0x8011, 0x01}, {0x8012, 0x20}, // LDA $2001, Y
+		{0x8013, 0xA5}, {0x8014, 0x80},					// LDA $80
+		{0x8015, 0xB5}, {0x8016, 0x80},					// LDA $80, X
+		{0x8017, 0xB6}, {0x8018, 0x80},					// LDX $80, Y
+		{0x8019, 0xA2}, {0x801A, 0x01},
+		{0x801B, 0xA1}, {0x801C, 0x81},					// LDA ($81, X)
+		{0x801D, 0xB1}, {0x801E, 0x84},					// LDA ($84), Y
+		{0x801F, 0x6C}, {0x8020, 0xFE}, {0x8021, 0x1F},	// JMP ($1FFE)
+
 	};
 
 	bool pass = false;
@@ -91,27 +112,27 @@ class App : public Engine {
 		SDL_Color RED = { 255,0,0,255 };
 		SDL_Color BLACK = { 0,0,0,255 };
 	}COLORS;
-	string N = "N"; string O = "O"; string U = "U"; string B = "B"; string D = "D"; string I = "I"; string Z = "Z"; string C = "C";
+	
 
 	Sprite sprite = Sprite(256, 240);
 	uint32_t cycle = 0;
 	uint32_t scanline = 0;
 	bool draw = true;
 	bool frame_complete = false;
+	
+	struct resolveStruct {
+		aven6502::instruction ins;
+		int16_t pc;
+	};
+	string N = "N"; string O = "O"; string U = "U"; string B = "B"; string D = "D"; string I = "I"; string Z = "Z"; string C = "C";
 	string ram1; string ram2; string ram3; string ram4; string ram5;
 	void drawNoiseOrder();
 	void DrawCPU();
 	void DrawRAM();
 	void resetDebug();
-	bool isDrawed = false;
-
-	uint16_t current_pc = 0x8000;
-
-	struct resolveStruct{
-		aven6502::instruction ins;
-		int16_t pc;
-	};
 	int resolveRAM(resolveStruct args, string& addr);
+
+	
 };
 
 void App::resetDebug() {
@@ -144,53 +165,88 @@ int App::resolveRAM(resolveStruct args, string& addr) {
 	if (args.ins.address == &aven6502::IMM) {
 		
 		addr = "#";
-		xd = number2hex(DataBus.read(args.pc + 1), 0);
+		xd = number2hex(DataBus.read(args.pc + 1), 2);
 		addr += xd;
-		addr += " ( IMM )";
 		ind = 1;
 	}
 	if (args.ins.address == &aven6502::REL) {
-		addr = "REL";
+		addr = "";
+		xd = number2hex(DataBus.read(args.pc + 1), 2);
+		addr += xd;
 		ind = 1;
 	}
 	if (args.ins.address == &aven6502::IMP) {
-		addr = "IMP";
+		addr = " ( IMP )";
 		ind = 0;
 	}
 	if (args.ins.address == &aven6502::ABS) {
-		addr = "ABS";
+		
+		addr = "";
+		uint16_t lsb = DataBus.read(args.pc + 1);
+		uint16_t msb = DataBus.read(args.pc + 2);
+		xd = number2hex(lsb + (msb<<8), 3);
+		addr += xd; 
 		ind = 2;
 	}
 	if (args.ins.address == &aven6502::ABX) {
-		addr = "ABX";
+		addr = "";
+		uint16_t lsb = DataBus.read(args.pc + 1);
+		uint16_t msb = DataBus.read(args.pc + 2);
+		xd = number2hex(lsb + (msb << 8), 3);
+		addr += xd;
+		addr += ", X ";
 		ind = 2;
 	}
 	if (args.ins.address == &aven6502::ABY) {
-		addr = "ABY";
+		addr = "";
+		uint16_t lsb = DataBus.read(args.pc + 1);
+		uint16_t msb = DataBus.read(args.pc + 2);
+		xd = number2hex(lsb + (msb << 8), 3);
+		addr += xd;
+		addr += ", Y ";
 		ind = 2;
 	}
 	if (args.ins.address == &aven6502::ZP0) {
-		addr = "ZP0";
+		addr = "";
+		xd = number2hex(DataBus.read(args.pc + 1), 2);
+		addr += xd;
 		ind = 1;
 	}
 	if (args.ins.address == &aven6502::ZPX) {
-		addr = "ZPX"; 
+		addr = "";
+		xd = number2hex(DataBus.read(args.pc + 1), 2);
+		addr += xd;
+		addr += ", X";
 		ind = 1;
 	}
 	if (args.ins.address == &aven6502::ZPY) {
-		addr = "ZPY";
+		addr = "";
+		xd = number2hex(DataBus.read(args.pc + 1), 2);
+		addr += xd;
+		addr += ", Y";
 		ind = 1;
 	}
 	if (args.ins.address == &aven6502::IND) {
-		addr = "IND";
+		addr = "(";
+		uint16_t lsb = DataBus.read(args.pc + 1);
+		uint16_t msb = DataBus.read(args.pc + 2);
+		xd = number2hex(lsb + (msb << 8), 3);
+		addr += xd;
+		addr += ") ";
 		ind = 2;
 	}
-	if (args.ins.address == &aven6502::IDY) {
-		addr = "IDY";
+	if (args.ins.address == &aven6502::IDX) {
+		addr = "(";
+		xd = number2hex(DataBus.read(args.pc + 1), 2);
+		addr += xd;
+		addr += ", X)";
 		ind = 1;
 	}
-	if (args.ins.address == &aven6502::IDX) {
-		addr = "IDX";
+	if (args.ins.address == &aven6502::IDY) {
+		addr = "(";
+		xd = number2hex(DataBus.read(args.pc + 1), 2);
+		addr += xd;
+		addr += "), Y";
 		ind = 1;
 	}
 
@@ -199,48 +255,24 @@ int App::resolveRAM(resolveStruct args, string& addr) {
 
 void App::DrawRAM() {
 	std::stringstream b;
-	string addr; int ind = 0; 
-	if (!isDrawed) {
-		aven6502::instruction x1 = DataBus.CPU.lista[DataBus.read(DataBus.CPU.PC - 2)]; 
-		b << "[ " << number2hex(DataBus.CPU.PC - 2, 1) << " ] - " << number2hex(DataBus.read(DataBus.CPU.PC - 2), 0); ram1 = b.str(); b.str(std::string());
-		
-		aven6502::instruction x2 = DataBus.CPU.lista[DataBus.read(DataBus.CPU.PC - 1)]; 
-		b << "[ " << number2hex(DataBus.CPU.PC - 1, 1) << " ] - " << number2hex(DataBus.read(DataBus.CPU.PC - 1), 0); ram2 = b.str(); b.str(std::string());
-		
-		aven6502::instruction x3 = DataBus.CPU.lista[DataBus.read(DataBus.CPU.PC + 0)]; 
-		ind = resolveRAM({ x3, (int16_t)DataBus.CPU.PC }, addr);
-		b << "[ " << number2hex(DataBus.CPU.PC, 1) << " ] - " << number2hex(DataBus.read(DataBus.CPU.PC), 0) << " = " << x3.nombre << "  " << addr; ram3 = b.str(); b.str(std::string());
-		
-		aven6502::instruction x4 = DataBus.CPU.lista[DataBus.read(DataBus.CPU.PC + 1 + ind)]; 
-		ind += resolveRAM({ x4, (int16_t) (DataBus.CPU.PC + 1 + ind) }, addr);
-		b << "[ " << number2hex(DataBus.CPU.PC + 0 + ind, 1) << " ] - " << number2hex(DataBus.read(DataBus.CPU.PC + 0 + ind), 0) << " = " << x4.nombre << " - " << addr; ram4 = b.str(); b.str(std::string());
-		
-		aven6502::instruction x5 = DataBus.CPU.lista[DataBus.read(DataBus.CPU.PC + 2 + ind)]; 
-		ind += resolveRAM({x5, (int16_t)(DataBus.CPU.PC + 2 + ind) }, addr);
-		b << "[ " << number2hex(DataBus.CPU.PC + 1 + ind, 1) << " ] - " << number2hex(DataBus.read(DataBus.CPU.PC + 1 + ind), 0) << " = " << x5.nombre << " - " << addr; ram5 = b.str(); b.str(std::string());
-		isDrawed = true;
-		
-	}
-	
-	if (current_pc != DataBus.CPU.PC) {
-		aven6502::instruction x1 = DataBus.CPU.lista[DataBus.read(DataBus.CPU.PC - 2)];
-		b << "[ " << number2hex(DataBus.CPU.PC - 2, 1) << " ] - " << number2hex(DataBus.read(DataBus.CPU.PC - 2), 0); ram1 = b.str(); b.str(std::string());
+	string addr; int ind1 = 0, ind2 = 0, ind3 = 0;
+	aven6502::instruction x1 = DataBus.CPU.lista[DataBus.read(DataBus.CPU.PC - 2)];
+	b << "[ " << number2hex(DataBus.CPU.PC - 2, 1) << " ] - " << number2hex(DataBus.read(DataBus.CPU.PC - 2), 0); ram1 = b.str(); b.str(std::string());
 
-		aven6502::instruction x2 = DataBus.CPU.lista[DataBus.read(DataBus.CPU.PC - 1)];
-		b << "[ " << number2hex(DataBus.CPU.PC - 1, 1) << " ] - " << number2hex(DataBus.read(DataBus.CPU.PC - 1), 0); ram2 = b.str(); b.str(std::string());
+	aven6502::instruction x2 = DataBus.CPU.lista[DataBus.read(DataBus.CPU.PC - 1)];
+	b << "[ " << number2hex(DataBus.CPU.PC - 1, 1) << " ] - " << number2hex(DataBus.read(DataBus.CPU.PC - 1), 0); ram2 = b.str(); b.str(std::string());
 
-		aven6502::instruction x3 = DataBus.CPU.lista[DataBus.read(DataBus.CPU.PC + 0)];
-		ind = resolveRAM({ x3, (int16_t)DataBus.CPU.PC }, addr);
-		b << "[ " << number2hex(DataBus.CPU.PC, 1) << " ] - " << number2hex(DataBus.read(DataBus.CPU.PC), 0) << " = " << x3.nombre << "  " << addr; ram3 = b.str(); b.str(std::string());
+	aven6502::instruction x3 = DataBus.CPU.lista[DataBus.read(DataBus.CPU.PC + 0)];
+	ind1 = resolveRAM({ x3, (int16_t)DataBus.CPU.PC }, addr);
+	b << "[ " << number2hex(DataBus.CPU.PC, 1) << " ] - " << number2hex(DataBus.read(DataBus.CPU.PC), 0) << " = " << x3.nombre << "  " << addr; ram3 = b.str(); b.str(std::string());
 
-		aven6502::instruction x4 = DataBus.CPU.lista[DataBus.read(DataBus.CPU.PC + 1 + ind)];
-		ind += resolveRAM({ x4, (int16_t)(DataBus.CPU.PC + 1 + ind) }, addr);
-		b << "[ " << number2hex(DataBus.CPU.PC + 0 + ind, 1) << " ] - " << number2hex(DataBus.read(DataBus.CPU.PC + 0 + ind), 0) << " = " << x4.nombre << " - " << addr; ram4 = b.str(); b.str(std::string());
+	aven6502::instruction x4 = DataBus.CPU.lista[DataBus.read(DataBus.CPU.PC + ind1 + 1)];
+	ind2 = resolveRAM({ x4, (int16_t)(DataBus.CPU.PC + ind1 + 1) }, addr);
+	b << "[ " << number2hex(DataBus.CPU.PC + ind1 + 1, 1) << " ] - " << number2hex(DataBus.read(DataBus.CPU.PC + ind1 + 1), 0) << " = " << x4.nombre << "  " << addr; ram4 = b.str(); b.str(std::string());
 
-		aven6502::instruction x5 = DataBus.CPU.lista[DataBus.read(DataBus.CPU.PC + 2 + ind)];
-		ind += resolveRAM({ x5, (int16_t)(DataBus.CPU.PC + 2 + ind) }, addr);
-		b << "[ " << number2hex(DataBus.CPU.PC + 1 + ind, 1) << " ] - " << number2hex(DataBus.read(DataBus.CPU.PC + 1 + ind), 0) << " = " << x5.nombre << " - " << addr; ram5 = b.str(); b.str(std::string());
-	}
+	aven6502::instruction x5 = DataBus.CPU.lista[DataBus.read(DataBus.CPU.PC + ind1 + ind2 + 2)];
+	ind3 = resolveRAM({ x5, (int16_t)(DataBus.CPU.PC + ind1 + ind2 + 2) }, addr);
+	b << "[ " << number2hex(DataBus.CPU.PC + ind1 + ind2 + 2, 1) << " ] - " << number2hex(DataBus.read(DataBus.CPU.PC + ind1 + ind2 + 2), 0) << " = " << x5.nombre << "  " << addr; ram5 = b.str(); b.str(std::string());
 	
 	DrawString(10, 120, ram1, COLORS.WHITE);
 	DrawString(10, 140, ram2, COLORS.WHITE);
@@ -304,13 +336,13 @@ void App ::DrawCPU() {
 }
 
 void App::appUpdate() {
-
+	if (getKeyPressed() == KEYS.SPACE) DataBus.clock();
+	if (getKeyPressed() == KEYS.R) { DataBus.reset(); resetDebug(); }
 	DrawCPU();
 	DrawRAM();
 	
 		
-	if (getKeyPressed() == KEYS.SPACE) DataBus.clock();
-	if (getKeyPressed() == KEYS.R) { DataBus.reset(); resetDebug(); }
+	
 }
 
 int main(int argc, char* argv[]) {
@@ -348,6 +380,9 @@ int main(int argc, char* argv[]) {
 
 	// 09-02-2023
 	// Debug simple incorporado con mi motor 2D simple.
+
+	// 09-02-2023
+	// 
 
 	App test;
 	test.Setting("demo", 400, 400);

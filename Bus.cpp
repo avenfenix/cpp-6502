@@ -22,6 +22,7 @@ void Bus::clock()
 void Bus::reset()
 {
 	CPU.reset();
+	clock_counter = 0;
 }
 
 uint8_t Bus::read(uint16_t address)
