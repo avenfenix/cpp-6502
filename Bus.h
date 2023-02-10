@@ -2,7 +2,10 @@
 #include <inttypes.h>
 #include <string>
 #include <vector>
+#include <fstream>
+
 #include "aven6502.h"
+
 
 
 
@@ -40,6 +43,7 @@ public:
 
 public:
 	std::shared_ptr<Memory> memory;
+	void loadRom(std::string path);
 public:
 	aven6502 CPU;
 };

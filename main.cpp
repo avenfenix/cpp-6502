@@ -71,7 +71,7 @@ class App : public Engine {
 		uint8_t byte;
 	};
 	//D:\\Emulation\\6502
-	std::vector<memformat> rom =
+	std::vector<memformat> ramdata =
 	{
 		{0x1FFE, 0x00}, {0x1FFF, 0x80},
 		{0x2001, 0x23},
@@ -82,25 +82,7 @@ class App : public Engine {
 		{0x0082, 0x00}, {0x0083, 0x30},
 		{0x0084, 0x00}, {0x0085, 0x30},
 		{0x3000, 0x28}, {0x3001, 0x20},
-		{0x3002, 0x29 },
-		{0xFFFC, 0x00}, {0xFFFD, 0x80},
-		
-		{0x8000, 0xA9}, {0x8001, 0xFF},					// LDA #$FF
-		{0x8002, 0x10}, {0x8003, 0x01},					// BPL $01
-		{0x8004, 0xEA},									// NOP
-		{0x8005, 0x78},									// SEI
-		{0x8006, 0xAD}, {0x8007, 0x01}, {0x8008, 0x20}, // LDA $2001
-		{0x8009, 0xA2}, {0x800A, 0x01},					// LDX #01
-		{0x800B, 0xBD}, {0x800C, 0x01}, {0x800D, 0x20}, // LDA $2001, X
-		{0x800E, 0xA0}, {0x800F, 0x02},					// LDY #02
-		{0x8010, 0xB9}, {0x8011, 0x01}, {0x8012, 0x20}, // LDA $2001, Y
-		{0x8013, 0xA5}, {0x8014, 0x80},					// LDA $80
-		{0x8015, 0xB5}, {0x8016, 0x80},					// LDA $80, X
-		{0x8017, 0xB6}, {0x8018, 0x80},					// LDX $80, Y
-		{0x8019, 0xA2}, {0x801A, 0x01},
-		{0x801B, 0xA1}, {0x801C, 0x81},					// LDA ($81, X)
-		{0x801D, 0xB1}, {0x801E, 0x84},					// LDA ($84), Y
-		{0x801F, 0x6C}, {0x8020, 0xFE}, {0x8021, 0x1F},	// JMP ($1FFE)
+		{0x3002, 0x29},
 
 	};
 
@@ -300,10 +282,13 @@ void App::drawNoiseOrder() {
 void App::appCreate() {
 	loadFont("C:\\Users\\juanp\\source\\repos\\2D-Engine-VS\\x64\\Debug\\fonts\\retro.ttf", 12);
 	
-	for (int i = 0; i < rom.size(); i++)
+	for (int i = 0; i < ramdata.size(); i++)
 	{
-		DataBus.write(rom[i].address, rom[i].byte);
+		DataBus.write(ramdata[i].address, ramdata[i].byte);
 	}
+
+	DataBus.loadRom("D:\\Emulation\\6502\\test_addressing.bin");
+
 	DataBus.reset();
 	
 }
@@ -380,9 +365,11 @@ int main(int argc, char* argv[]) {
 
 	// 09-02-2023
 	// Debug simple incorporado con mi motor 2D simple.
+	// Fixes: Debug RAM * IMPLIED PC Behaviour * JMP implementacion. 
+	// Add: xxx
 
-	// 09-02-2023
-	// 
+	// 10-02-2023
+	// Carga de binario implementado.
 
 	App test;
 	test.Setting("demo", 400, 400);
