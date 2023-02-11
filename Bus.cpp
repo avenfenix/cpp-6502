@@ -44,7 +44,7 @@ void Bus::write(uint16_t address, uint8_t data)
 }
 
 void Bus::loadRom(std::string path)
-{ 
+{
 	std::ifstream stream(path, std::ifstream::binary);  // Stream de archivo binario.
-	stream.read((char *) &memory->memory[0x8000], 32 * 1024);
+	stream.read((char*)&memory->memory[0x8000], 32 * 1024);
 }

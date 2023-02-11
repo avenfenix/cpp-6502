@@ -45,7 +45,7 @@ public:
 		uint8_t(aven6502::* address)(void) = nullptr; // Puntero al modo de addressing
 		uint8_t cycles = 0;
 	};
-	
+
 	vector<instruction> lista;
 
 	// Estado del procesador
@@ -122,6 +122,7 @@ public:
 	uint8_t address_relative = 0x00;
 	uint16_t cycles = 0x0000;
 	uint16_t clock_counter = 0x0000;
+	bool complete = false;
 
 
 public:
@@ -143,7 +144,7 @@ public:
 		N = 0x01 << 7,	// Negative
 	};
 
-    uint8_t GetFlag(flags entry);
+	uint8_t GetFlag(flags entry);
 	void SetFlag(flags entry, bool value);
 
 

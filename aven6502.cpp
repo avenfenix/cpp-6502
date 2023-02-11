@@ -11,7 +11,7 @@ aven6502::aven6502()
 
 	// olc - copiado directamente
 	using a = aven6502;
-	
+
 	lista =
 	{
 		{ "BRK", &a::BRK, &a::IMM, 7 },{ "ORA", &a::ORA, &a::IDX, 6 },{ "???", &a::XXX, &a::IMP, 2 },{ "???", &a::XXX, &a::IMP, 8 },{ "???", &a::NOP, &a::IMP, 3 },{ "ORA", &a::ORA, &a::ZP0, 3 },{ "ASL", &a::ASL, &a::ZP0, 5 },{ "???", &a::XXX, &a::IMP, 5 },{ "PHP", &a::PHP, &a::IMP, 3 },{ "ORA", &a::ORA, &a::IMM, 2 },{ "ASL", &a::ASL, &a::IMP, 2 },{ "???", &a::XXX, &a::IMP, 2 },{ "???", &a::NOP, &a::IMP, 4 },{ "ORA", &a::ORA, &a::ABS, 4 },{ "ASL", &a::ASL, &a::ABS, 6 },{ "???", &a::XXX, &a::IMP, 6 },
@@ -132,16 +132,19 @@ void aven6502::nmi() {
 }
 
 void aven6502::clock() {
-	
+
 
 	if (cycles == 0) {
-		
-        uint8_t opcode = fetch();
+
+		uint8_t opcode = fetch();
 
 		uint8_t cycles_ad = (this->*lista[opcode].address)();
 		uint8_t cycles_op = (this->*lista[opcode].execute)();
 
 		cycles = lista[opcode].cycles + cycles_ad + cycles_op;
+
+		complete = true;
+
 		return;
 	}
 

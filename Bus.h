@@ -32,7 +32,7 @@ public:
 public:
 	void reset();
 	void clock();
-	
+
 
 public:
 	uint8_t read(uint16_t address);
@@ -47,4 +47,3 @@ public:
 public:
 	aven6502 CPU;
 };
-
