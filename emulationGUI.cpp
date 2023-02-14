@@ -82,6 +82,7 @@ std::string number2hex(int x, int out)
 	{
 		return hex2byte(x);
 	}
+	return "";
 }
 
 
@@ -145,6 +146,7 @@ void emulationGUI::userCreate() {
 		qDebug() << fileName;
 		DataBus.loadRom(fileName.toStdString());
 		resetDebug();
+		resetStackView();
 		DataBus.reset();
 		userUpdate();
 	});
@@ -154,11 +156,17 @@ void emulationGUI::userCreate() {
 	ui.tableWidget->insertColumn(1);
 	ui.tableWidget->insertColumn(2);
 	ui.tableWidget->setHorizontalHeaderLabels({"Address", "Byte", "Detail"});
-
 	ui.tableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
 	ui.tableWidget->setColumnWidth(0, 75);
 	ui.tableWidget->setColumnWidth(1, 40);
 	ui.tableWidget->setColumnWidth(2, 144);
+
+	ui.stackTable->insertColumn(0);
+	ui.stackTable->insertColumn(1);
+	ui.stackTable->setHorizontalHeaderLabels({"Address","Byte"});
+	ui.stackTable->setColumnWidth(0, 60);
+	ui.stackTable->setColumnWidth(1, 60);
+	ui.stackTable->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
 	
 
@@ -226,23 +234,23 @@ void emulationGUI::resetDebug() {
 		ui.tableWidget->insertRow(i);
 	}
 
-	ui.tableWidget->hideRow(1);
+	
 
 	for (int i = 0; i < 32768; i++)
 	{
 		std::stringstream b;
 		std::string addr; int ind1 = 0;
-		if (0x8000 + i < 0xFFF4) {
+		if (PROGRAM_ADDRESS + i < 0xFFF4) {
 			aven6502::instruction ins = DataBus.CPU.lista[DataBus.read(0x8000 + i)];
-			ind1 = resolveRAM({ ins, (int16_t)(0x8000 + i)}, addr);
-			b << ins.nombre << "  " << addr; ram1 = b.str(); b.str(std::string());
+			ind1 = resolveRAM({ ins, (int16_t)(PROGRAM_ADDRESS + i)}, addr);
+			b << ins.nombre << "  " << addr; ram = b.str(); b.str(std::string());
 
 			QTableWidgetItem* item1 = new QTableWidgetItem;
 			item1->setText(number2hex(0x8000 + i, HEX2_X).c_str());
 			QTableWidgetItem* item2 = new QTableWidgetItem;
 			item2->setText(number2hex(DataBus.read(0x8000 + i), HEX1_X).c_str());
 			QTableWidgetItem* item3 = new QTableWidgetItem;
-			item3->setText(ram1.c_str());
+			item3->setText(ram.c_str());
 			ui.tableWidget->setItem(i, 0, item1);
 			ui.tableWidget->setItem(i, 1, item2);
 			ui.tableWidget->setItem(i, 2, item3);
@@ -367,6 +375,30 @@ void emulationGUI::resetDebug() {
 		
 	}
 }
+
+void emulationGUI::resetStackView()
+{
+	for (int i = 0; i < 256; i++)
+	{
+		ui.stackTable->insertRow(i);
+	}
+
+	for (int i = 0; i < 256; i++)
+	{
+		QTableWidgetItem* item1 = new QTableWidgetItem;
+		item1->setText(number2hex(STACK_BASE - i, HEX2_X).c_str());
+		ui.stackTable->setItem(i, 0, item1);
+
+		QTableWidgetItem* item2 = new QTableWidgetItem;
+		item2->setText(number2hex(DataBus.read(STACK_BASE - i), HEX1_X).c_str());
+		ui.stackTable->setItem(i, 1, item2);
+		
+
+		
+	}
+}
+
+
 
 int emulationGUI::resolveRAM(resolveStruct args, std::string& addr) {
 	int ind = 0;

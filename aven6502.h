@@ -1,8 +1,17 @@
 #pragma once
+
 #include <inttypes.h>
 #include <string>
 #include <vector>
 #include <memory>
+
+#define truebyte  0x01
+#define falsebyte 0x00
+
+#define PROGRAM_ADDRESS 0x8000
+#define STACK_BASE 0x01FF
+#define ZERO_BYTE 0x00
+#define ZERO_WORD 0x0000
 
 using std::vector;
 

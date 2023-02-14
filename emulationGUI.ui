@@ -6,12 +6,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>782</width>
+    <width>801</width>
     <height>294</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>emulationGUI</string>
+   <string>6502 emulator - avenfenix</string>
+  </property>
+  <property name="unifiedTitleAndToolBarOnMac">
+   <bool>false</bool>
   </property>
   <widget class="QWidget" name="centralWidget">
    <widget class="QPushButton" name="stepbystepButton">
@@ -58,7 +61,7 @@
      <rect>
       <x>10</x>
       <y>0</y>
-      <width>431</width>
+      <width>451</width>
       <height>211</height>
      </rect>
     </property>
@@ -70,7 +73,7 @@
       <rect>
        <x>280</x>
        <y>20</y>
-       <width>141</width>
+       <width>161</width>
        <height>191</height>
       </rect>
      </property>
@@ -103,15 +106,18 @@
        <string/>
       </property>
      </widget>
-     <widget class="QListView" name="listView">
+     <widget class="QTableWidget" name="stackTable">
       <property name="geometry">
        <rect>
         <x>10</x>
         <y>50</y>
-        <width>121</width>
-        <height>121</height>
+        <width>141</width>
+        <height>131</height>
        </rect>
       </property>
+      <attribute name="verticalHeaderVisible">
+       <bool>false</bool>
+      </attribute>
      </widget>
     </widget>
     <widget class="QGroupBox" name="groupBox_3">
@@ -404,7 +410,7 @@
    <widget class="QGroupBox" name="groupBox_6">
     <property name="geometry">
      <rect>
-      <x>450</x>
+      <x>470</x>
       <y>0</y>
       <width>321</width>
       <height>251</height>
@@ -416,10 +422,10 @@
     <widget class="QTableWidget" name="tableWidget">
      <property name="geometry">
       <rect>
-       <x>20</x>
+       <x>10</x>
        <y>30</y>
-       <width>281</width>
-       <height>192</height>
+       <width>301</width>
+       <height>211</height>
       </rect>
      </property>
      <property name="cursor" stdset="0">
@@ -461,7 +467,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>782</width>
+     <width>801</width>
      <height>22</height>
     </rect>
    </property>

@@ -43,9 +43,10 @@ public:
         aven6502::instruction ins;
         int16_t pc;
     };
-    std::string ram1; std::string ram2; std::string ram3; std::string ram4; std::string ram5;
+    std::string ram;
     void DrawRAM();
     void resetDebug();
+    void resetStackView();
     int resolveRAM(resolveStruct args, std::string& addr);
 
 

@@ -3,6 +3,9 @@
 #include <iostream>
 #include <vector>
 
+
+
+
 using std::vector;
 
 aven6502::aven6502()
@@ -368,7 +371,7 @@ uint8_t aven6502::LSR(void)
 {
 	uint8_t byte = read(address_absolute);
 	isCarry(byte, RIGTH);
-	byte >> 1;
+	byte >>= 1;
 	write(address_absolute, byte);
 	isZero(byte);
 	SetFlag(N, false);
@@ -379,7 +382,7 @@ uint8_t aven6502::ASL(void)
 {
 	uint8_t byte = read(address_absolute);
 	isCarry(byte, LEFT);
-	byte << 1;
+	byte <<=1;
 	write(address_absolute, byte);
 	isZero(byte);
 	isNegative(byte);
@@ -675,49 +678,49 @@ uint8_t aven6502::JMP()
 
 uint8_t aven6502::BPL(void)
 {
-	if (GetFlag(N) == false) PC += address_relative;
+	if (GetFlag(N) == falsebyte) PC += address_relative;
 	return 0x00;
 }
 
 uint8_t aven6502::BMI(void)
 {
-	if (GetFlag(N) == true) PC += address_relative;
+	if (GetFlag(N) == truebyte) PC += address_relative;
 	return 0x00;
 }
 
 uint8_t aven6502::BVC(void)
 {
-	if (GetFlag(V) == false) PC += address_relative;
+	if (GetFlag(V) == falsebyte) PC += address_relative;
 	return 0x00;
 }
 
 uint8_t aven6502::BVS(void)
 {
-	if (GetFlag(V) == true) PC += address_relative;
+	if (GetFlag(V) == truebyte) PC += address_relative;
 	return 0x00;
 }
 
 uint8_t aven6502::BCS(void)
 {
-	if (GetFlag(C) == true) PC += address_relative;
+	if (GetFlag(C) == truebyte) PC += address_relative;
 	return 0x00;
 }
 
 uint8_t aven6502::BCC(void)
 {
-	if (GetFlag(C) == false) PC += address_relative;
+	if (GetFlag(C) == falsebyte) PC += address_relative;
 	return 0x00;
 }
 
 uint8_t aven6502::BEQ(void)
 {
-	if (GetFlag(Z) == true) PC += address_relative;
+	if (GetFlag(Z) == truebyte) PC += address_relative;
 	return 0x00;
 }
 
 uint8_t aven6502::BNE(void)
 {
-	if (GetFlag(Z) == false) PC += address_relative;
+	if (GetFlag(Z) == falsebyte) PC += address_relative;
 	return 0x00;
 }
 
